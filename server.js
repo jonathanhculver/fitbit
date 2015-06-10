@@ -10,12 +10,6 @@ app.use(session({
   saveUninitialized: false
 }));
 
-app.use(function(req, res, next){
-  req.foo = Math.random().toString();
-  //console.log(req.session.oauth);
-  next();
-});
-
 var isAuthenticated = function(req, res, next) {
     if(req.session.oauth != undefined) {
         return next();
