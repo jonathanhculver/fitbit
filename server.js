@@ -3,7 +3,7 @@ var express = require("express"),
 	Fitbit = require('fitbit'),
 	config = require('./config/credentials'),
 	session = require('express-session'),
-	jade = require('jade');
+	ejs = require('ejs');
 
 app.use(session({
   secret: 'nxj',
@@ -12,7 +12,7 @@ app.use(session({
 }));
 
 app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
+app.set('view engine', 'ejs');
 
 var isAuthenticated = function(req, res, next) {
     if(req.session.oauth != undefined) {
@@ -22,7 +22,7 @@ var isAuthenticated = function(req, res, next) {
 };
 
 // OAuth flow
-app.get('/', function (req, res) {
+app.get('/fitbit/auth', function (req, res) {
   // Create an API client and start authentication via OAuth
   var client = new Fitbit(config.CONSUMER_KEY, config.CONSUMER_SECRET);
 
@@ -52,12 +52,12 @@ app.get('/oauth_callback', function (req, res) {
         oauthSettings.accessToken = token;
         oauthSettings.accessTokenSecret = secret;
 
-        res.redirect('/login');
+        res.redirect('/');
       }
   );
 });
 
-app.get('/login', isAuthenticated, function(req, res) {
+app.get('/', isAuthenticated, function(req, res) {
 	res.send('logged in');
 });
 
