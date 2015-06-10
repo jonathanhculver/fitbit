@@ -16,6 +16,13 @@ app.use(function(req, res, next){
   next();
 });
 
+var isAuthenticated = function(req, res, next) {
+    if(req.session.oauth != undefined) {
+        return next();
+    }
+    res.redirect('/login/fail');
+};
+
 // OAuth flow
 app.get('/', function (req, res) {
   // Create an API client and start authentication via OAuth
@@ -56,7 +63,11 @@ app.get('/login', function(req, res) {
 	res.send('logged in');
 });
 
-app.get('/api/stats', function(req, res) {
+app.get('/login/fail', function(req, res) {
+	res.send('please login');
+});
+
+app.get('/api/stats', isAuthenticated, function(req, res) {
 	var client = authenticate(req.session.oauth.accessToken, req.session.oauth.accessTokenSecret);
 	// Fetch todays activities
 	client.getActivities(function (err, activities) {
@@ -64,7 +75,7 @@ app.get('/api/stats', function(req, res) {
 	});
 });
 
-app.get('/api/sleep', function(req, res) {
+app.get('/api/sleep', isAuthenticated, function(req, res) {
 	var client = authenticate(req.session.oauth.accessToken, req.session.oauth.accessTokenSecret);
 	client.getSleep(function (err, sleep) {
 		res.json(sleep);
