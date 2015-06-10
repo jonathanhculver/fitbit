@@ -2,13 +2,17 @@ var express = require("express"),
 	app = express(),
 	Fitbit = require('fitbit'),
 	config = require('./config/credentials'),
-	session = require('express-session');
+	session = require('express-session'),
+	jade = require('jade');
 
 app.use(session({
   secret: 'nxj',
   resave: false,
   saveUninitialized: false
 }));
+
+app.set('views', __dirname + '/views');
+app.set('view engine', 'jade');
 
 var isAuthenticated = function(req, res, next) {
     if(req.session.oauth != undefined) {
@@ -53,12 +57,12 @@ app.get('/oauth_callback', function (req, res) {
   );
 });
 
-app.get('/login', function(req, res) {
+app.get('/login', isAuthenticated, function(req, res) {
 	res.send('logged in');
 });
 
 app.get('/login/fail', function(req, res) {
-	res.send('please login');
+	res.render('login');
 });
 
 app.get('/api/stats', isAuthenticated, function(req, res) {
