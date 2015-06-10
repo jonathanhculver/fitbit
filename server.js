@@ -22,10 +22,6 @@ app.get('/', function (req, res) {
   var client = new Fitbit(config.CONSUMER_KEY, config.CONSUMER_SECRET);
 
   client.getRequestToken(function (err, token, tokenSecret) {
-    if (err) {
-      // Take action
-      return;
-    }
 
     req.session.oauth = {
         requestToken: token
@@ -47,10 +43,6 @@ app.get('/oauth_callback', function (req, res) {
     , oauthSettings.requestTokenSecret
     , verifier
     , function (err, token, secret) {
-        if (err) {
-          // Take action
-          return;
-        }
 
         oauthSettings.accessToken = token;
         oauthSettings.accessTokenSecret = secret;
@@ -65,7 +57,7 @@ app.get('/login', function(req, res) {
 });
 
 app.get('/api/stats', function(req, res) {
-	client = authenticate(req);
+	var client = authenticate(req.session.oauth.accessToken, req.session.oauth.accessTokenSecret);
 	// Fetch todays activities
 	client.getActivities(function (err, activities) {
 		res.json(activities);
@@ -73,8 +65,7 @@ app.get('/api/stats', function(req, res) {
 });
 
 app.get('/api/sleep', function(req, res) {
-	client = authenticate(req);
-	// Fetch todays activities
+	var client = authenticate(req.session.oauth.accessToken, req.session.oauth.accessTokenSecret);
 	client.getSleep(function (err, sleep) {
 		res.json(sleep);
 	});
@@ -84,13 +75,13 @@ app.listen(process.env.PORT || 5000, function() {
 	console.log("Listening on port "+ this.address().port);
 });
 
-var authenticate = function(req) {
+var authenticate = function(accessToken, accessTokenSecret) {
 	client = new Fitbit(
 		      config.CONSUMER_KEY
 		    , config.CONSUMER_SECRET
 		    , { // Now set with access tokens
-		          accessToken: req.session.oauth.accessToken
-		        , accessTokenSecret: req.session.oauth.accessTokenSecret
+		          accessToken: accessToken
+		        , accessTokenSecret: accessTokenSecret
 		        , unitMeasure: 'en_GB'
 		      }
 		  );
